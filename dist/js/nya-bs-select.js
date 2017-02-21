@@ -412,14 +412,14 @@ nyaBsSelect.directive('nyaBsSelect', ['$parse', '$document', '$timeout', '$compi
 
   var DEFAULT_NONE_SELECTION = 'Nothing selected';
 
-  var DROPDOWN_TOGGLE = '<button class="btn btn-default dropdown-toggle" type="button">' +
+  var DROPDOWN_TOGGLE = '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
     '<span class="pull-left filter-option"></span>' +
     '<span class="pull-left special-title"></span>' +
     '&nbsp;' +
-    '<span class="caret"></span>' +
+    //'<span class="caret"></span>' +
     '</button>';
 
-  var DROPDOWN_CONTAINER = '<div class="dropdown-menu open"></div>';
+  var DROPDOWN_CONTAINER = '<div class="dropdown-menu show"></div>';
 
   var SEARCH_BOX = '<div class="bs-searchbox">' +
     '<input type="text" class="form-control">' +
