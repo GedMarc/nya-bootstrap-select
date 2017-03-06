@@ -376,7 +376,7 @@
 
         /**
          * get the localized text according current locale or forced locale
-         * 
+         *
          * @param $locale
          * @returns localizedText
          */
@@ -420,22 +420,11 @@
 
             var DEFAULT_NONE_SELECTION = 'Nothing selected';
 
-            var DROPDOWN_TOGGLE = '<button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
-                    '<span class="pull-left filter-option"></span>' +
-                    '<span class="pull-left special-title"></span>' +
-                    '&nbsp;' +
-                    //'<span class="caret"></span>' +
-                    '</button>';
-
-            var DROPDOWN_CONTAINER = '<div class="dropdown-menu show"></div>';
-
             var SEARCH_BOX = '<div class="bs-searchbox">' +
-                    '<input type="text" class="form-control">' +
+                    '<input type="text" class="form-control" placeholder="Search">' +
                     '</div>';
 
-            var DROPDOWN_MENU = '<ul class="dropdown-menu inner"></ul>';
-
-            var NO_SEARCH_RESULT = '<li class="no-search-result"><span>NO SEARCH RESULT</span></li>';
+            var NO_SEARCH_RESULT = '<div class="no-search-result"><span>NO SEARCH RESULT</span></div>';
 
             var ACTIONS_BOX = '<div class="bs-actionsbox">' +
                     '<div class="btn-group btn-group-sm btn-block">' +
@@ -450,9 +439,26 @@
                 controller: 'nyaBsSelectCtrl',
                 compile: function nyaBsSelectCompile(tElement, tAttrs) {
 
+                    var originalElement = $(tElement);
+                    var originalSelector = originalElement[0];
 
-                    tElement.addClass('btn-group');
+                    var newElement = $('<div class="dropdown"></div>'); //create the new drop down element separate from the ol tag
+                    var newDropDownToggleDisplay = $('<button class="btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                            '<span class="pull-left filter-option"></span>' +
+                            '<span class="pull-left special-title"></span>' +
+                            '&nbsp;' +
+                            '</button>');
+                    var newSpecialTitleDisplay = newDropDownToggleDisplay.find('.special-title');
+                    var newDropDownToggleCaret = $('<button type="button" class="btn btn-default dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                            '<span class="sr-only">Toggle Dropdown</span>' +
+                            '</button>');
+                    var newDropDownContainer = $('<div class="dropdown-menu btn-block"></div>');
 
+                    var buttonClass = 'btn-default';
+
+                    newElement.append(newDropDownToggleDisplay);
+                    //newElement.append(newDropDownToggleCaret);
+                    newElement.append(newDropDownContainer);
 
                     /**
                      * get the default text when nothing is selected. can be template
@@ -489,9 +495,6 @@
                     };
 
                     var options = tElement.children(),
-                            dropdownToggle = jqLite(DROPDOWN_TOGGLE),
-                            dropdownContainer = jqLite(DROPDOWN_CONTAINER),
-                            dropdownMenu = jqLite(DROPDOWN_MENU),
                             searchBox,
                             noSearchResult,
                             actionsBox,
@@ -503,25 +506,26 @@
                             isMultiple = typeof tAttrs.multiple !== 'undefined',
                             nyaBsOptionValue;
 
-                    classList = getClassList(tElement[0]);
+                    classList = getClassList(originalSelector);
+
                     classList.forEach(function (className) {
-                        if (/btn-(?:primary|info|success|warning|danger|inverse)/.test(className)) {
+                        if (/btn-(?:primary|info|success|warning|danger|inverse|secondary|outline-primary|outline-info|outline-success|outline-warning|outline-danger|outline-inverse|outline-secondary|)/.test(className)) {
                             tElement.removeClass(className);
-                            dropdownToggle.removeClass('btn-default');
-                            dropdownToggle.addClass(className);
+                            newDropDownToggleDisplay.removeClass('btn-default');
+                            newDropDownToggleDisplay.addClass(className);
+                            buttonClass = className;
                         }
 
                         if (/btn-(?:lg|sm|xs)/.test(className)) {
                             tElement.removeClass(className);
-                            dropdownToggle.addClass(className);
+                            newDropDownToggleDisplay.addClass(className);
                         }
 
                         if (className === 'form-control') {
-                            dropdownToggle.addClass(className);
+                            newDropDownToggleDisplay.addClass(className);
                         }
                     });
-
-                    dropdownMenu.append(options);
+                    newDropDownContainer.append(options);
 
                     // add tabindex to children anchor elements if not present.
                     // tabindex attribute will give an anchor element ability to be get focused.
@@ -538,8 +542,35 @@
                                 liElement.attr('data-value', nyaBsOptionValue);
                                 liElement.removeAttr('value');
                             }
+                            $(liElement).find('.check-mark').addClass('pull-right');
+
                         }
                     }
+
+                    if (tAttrs.actionsBox === 'true' && isMultiple) {
+                        // set localizedText
+                        if (localizedText.selectAllTpl) {
+                            ACTIONS_BOX = ACTIONS_BOX.replace('SELECT ALL', localizedText.selectAllTpl);
+                        } else if (localizedText.selectAll) {
+                            ACTIONS_BOX = ACTIONS_BOX.replace('SELECT ALL', localizedText.selectAll);
+                        }
+
+                        if (localizedText.deselectAllTpl) {
+                            ACTIONS_BOX = ACTIONS_BOX.replace('DESELECT ALL', localizedText.deselectAllTpl);
+                        } else if (localizedText.selectAll) {
+                            ACTIONS_BOX = ACTIONS_BOX.replace('DESELECT ALL', localizedText.deselectAll);
+                        }
+                        if (buttonClass)
+                        {
+                            ACTIONS_BOX = ACTIONS_BOX.replace(/btn-default/g, buttonClass);
+                        }
+
+
+                        actionsBox = jqLite(ACTIONS_BOX);
+                        //dropdownContainer.append(actionsBox);
+                        newDropDownContainer.prepend(actionsBox);
+                    }
+
 
                     if (tAttrs.liveSearch === 'true') {
                         searchBox = jqLite(SEARCH_BOX);
@@ -558,35 +589,24 @@
                         }
 
                         noSearchResult = jqLite(NO_SEARCH_RESULT);
-                        dropdownContainer.append(searchBox);
-                        dropdownMenu.append(noSearchResult);
+                        //dropdownContainer.append(searchBox);
+                        newDropDownContainer.prepend(searchBox);
+                        newDropDownContainer.prepend(noSearchResult);
+                        noSearchResult.hide();
+                        //dropdownMenu.append(noSearchResult);
                     }
 
-                    if (tAttrs.actionsBox === 'true' && isMultiple) {
-                        // set localizedText
-                        if (localizedText.selectAllTpl) {
-                            ACTIONS_BOX = ACTIONS_BOX.replace('SELECT ALL', localizedText.selectAllTpl);
-                        } else if (localizedText.selectAll) {
-                            ACTIONS_BOX = ACTIONS_BOX.replace('SELECT ALL', localizedText.selectAll);
-                        }
 
-                        if (localizedText.deselectAllTpl) {
-                            ACTIONS_BOX = ACTIONS_BOX.replace('DESELECT ALL', localizedText.deselectAllTpl);
-                        } else if (localizedText.selectAll) {
-                            ACTIONS_BOX = ACTIONS_BOX.replace('DESELECT ALL', localizedText.deselectAll);
-                        }
-
-                        actionsBox = jqLite(ACTIONS_BOX);
-                        dropdownContainer.append(actionsBox);
-                    }
 
                     // set default none selection text
-                    jqLite(dropdownToggle[0].querySelector('.special-title')).append(getDefaultNoneSelectionContent());
+                    //jqLite(dropdownToggle[0].querySelector('.special-title')).append(getDefaultNoneSelectionContent());
+                    newSpecialTitleDisplay.append(getDefaultNoneSelectionContent());
 
-                    dropdownContainer.append(dropdownMenu);
+                    // dropdownContainer.append(dropdownMenu);
 
-                    tElement.append(dropdownToggle);
-                    tElement.append(dropdownContainer);
+                    //tElement.append(dropdownToggle);
+                    //tElement.append(dropdownContainer);
+                    tElement.append(newElement);
 
                     return function nyaBsSelectLink($scope, $element, $attrs, ctrls) {
 
@@ -600,12 +620,12 @@
                                 isMultiple = typeof $attrs.multiple !== 'undefined';
 
                         // find element from current $element root. because the compiled element may be detached from DOM tree by ng-if or ng-switch.
-                        var dropdownToggle = jqLite($element[0].querySelector('.dropdown-toggle')),
-                                dropdownContainer = dropdownToggle.next(),
-                                dropdownMenu = jqLite(dropdownContainer[0].querySelector('.dropdown-menu.inner')),
-                                searchBox = jqLite(dropdownContainer[0].querySelector('.bs-searchbox')),
-                                noSearchResult = jqLite(dropdownMenu[0].querySelector('.no-search-result')),
-                                actionsBox = jqLite(dropdownContainer[0].querySelector('.bs-actionsbox'));
+                        var dropdownToggle = $element.find('.dropdown-toggle'),
+                                dropdownContainer = newDropDownContainer,
+                                dropdownMenu = newDropDownContainer, //jqLite(dropdownContainer[0].querySelector('.dropdown-menu.inner')),
+                                searchBox = dropdownContainer.find('.bs-searchbox'),
+                                noSearchResult = dropdownMenu.find('.no-search-result'),
+                                actionsBox = dropdownContainer.find('.bs-actionsbox');
 
                         if (nyaBsSelectCtrl.valueExp) {
                             valueExpFn = function (scope, locals) {
@@ -618,27 +638,34 @@
 
                         if (isMultiple) {
                             nyaBsSelectCtrl.isMultiple = true;
-
                             // required validator
                             ngCtrl.$isEmpty = function (value) {
                                 return !value || value.length === 0;
                             };
+
+                            //if multiple don't close on click
+                            newDropDownContainer.click(function (event) {
+                                event.stopPropagation();
+                            });
+
                         }
+
+
                         if (typeof $attrs.disabled !== 'undefined') {
                             $scope.$watch($attrs.disabled, function (disabled) {
                                 if (disabled) {
-                                    dropdownToggle.addClass('disabled');
-                                    dropdownToggle.attr('disabled', 'disabled');
-                                    previousTabIndex = dropdownToggle.attr('tabindex');
-                                    dropdownToggle.attr('tabindex', '-1');
+                                    newDropDownToggleDisplay.addClass('disabled');
+                                    newDropDownToggleDisplay.attr('disabled', 'disabled');
+                                    previousTabIndex = newDropDownToggleDisplay.attr('tabindex');
+                                    newDropDownToggleDisplay.attr('tabindex', '-1');
                                     isDisabled = true;
                                 } else {
-                                    dropdownToggle.removeClass('disabled');
-                                    dropdownToggle.removeAttr('disabled');
+                                    newDropDownToggleDisplay.removeClass('disabled');
+                                    newDropDownToggleDisplay.removeAttr('disabled');
                                     if (previousTabIndex) {
-                                        dropdownToggle.attr('tabindex', previousTabIndex);
+                                        newDropDownToggleDisplay.attr('tabindex', previousTabIndex);
                                     } else {
-                                        dropdownToggle.removeAttr('tabindex');
+                                        newDropDownToggleDisplay.removeAttr('tabindex');
                                     }
                                     isDisabled = false;
                                 }
@@ -723,7 +750,7 @@
 
                         // view --> model
 
-                        dropdownMenu.on('click', function menuEventHandler(event) {
+                        newDropDownContainer.on('click', function menuEventHandler(event) {
                             if (isDisabled) {
                                 return;
                             }
@@ -731,7 +758,7 @@
                             if (jqLite(event.target).hasClass('dropdown-header')) {
                                 return;
                             }
-                            var nyaBsOptionNode = filterTarget(event.target, dropdownMenu[0], 'nya-bs-option'),
+                            var nyaBsOptionNode = filterTarget(event.target, newDropDownContainer[0], 'nya-bs-option'),
                                     nyaBsOption;
 
                             if (nyaBsOptionNode !== null) {
@@ -754,14 +781,13 @@
                         };
                         $document.on('click', outClick);
 
-
-
-                        dropdownToggle.on('blur', function () {
+                        newDropDownToggleDisplay.on('blur', function () {
                             if (!$element.hasClass('open')) {
                                 $element.triggerHandler('blur');
                             }
                         });
-                        dropdownToggle.on('click', function () {
+
+                        newDropDownToggleDisplay.on('click', function () {
                             var nyaBsOptionNode;
                             $element.toggleClass('open');
                             if ($element.hasClass('open') && typeof liHeight === 'undefined') {
@@ -771,7 +797,7 @@
                                 searchBox.children().eq(0)[0].focus();
                                 nyaBsOptionNode = findFocus(true);
                                 if (nyaBsOptionNode) {
-                                    dropdownMenu.children().removeClass('active');
+                                    newDropDownContainer.children().removeClass('active');
                                     jqLite(nyaBsOptionNode).addClass('active');
                                 }
                             } else if ($element.hasClass('open')) {
@@ -795,52 +821,63 @@
 
                         // live search
                         if ($attrs.liveSearch === 'true') {
-                            searchBox.children().on('input', function () {
+                            searchBox.children().each(function () {
+                                $(this).on('input', function () {
 
-                                var searchKeyword = searchBox.children().val(),
-                                        found = 0,
-                                        options = dropdownMenu.children(),
-                                        length = options.length,
-                                        index,
-                                        option,
-                                        nyaBsOptionNode;
+                                    var searchKeyword = $(this).val(),
+                                            found = 0,
+                                            options = newDropDownContainer.children(),
+                                            length = options.length,
+                                            index,
+                                            option,
+                                            nyaBsOptionNode;
 
-                                if (searchKeyword) {
-                                    for (index = 0; index < length; index++) {
-                                        option = options.eq(index);
-                                        if (option.hasClass('nya-bs-option')) {
-                                            if (!hasKeyword(option.find('a'), searchKeyword)) {
-                                                option.addClass('not-match');
-                                            } else {
-                                                option.removeClass('not-match');
-                                                found++;
+                                    if (searchKeyword) {
+                                        for (index = 0; index < length; index++) {
+                                            option = options.eq(index);
+                                            if (option.hasClass('nya-bs-option')) {
+                                                if (!hasKeyword(option.find('a'), searchKeyword)) {
+                                                    option.addClass('not-match');
+                                                    option.hide();
+                                                } else {
+                                                    option.removeClass('not-match');
+                                                    option.show();
+                                                    found++;
+                                                }
                                             }
                                         }
-                                    }
 
-                                    if (found === 0) {
-                                        noSearchResult.addClass('show');
-                                    } else {
-                                        noSearchResult.removeClass('show');
-                                    }
-                                } else {
-                                    for (index = 0; index < length; index++) {
-                                        option = options.eq(index);
-                                        if (option.hasClass('nya-bs-option')) {
-                                            option.removeClass('not-match');
+                                        if (found === 0) {
+                                            noSearchResult.show();
+                                        } else {
+                                            noSearchResult.hide();
                                         }
+                                    } else {
+                                        for (index = 0; index < length; index++) {
+                                            option = options.eq(index);
+                                            if (option.hasClass('nya-bs-option')) {
+                                                option.removeClass('not-match');
+                                                option.show();
+                                            }
+                                        }
+                                        noSearchResult.show();
                                     }
-                                    noSearchResult.removeClass('show');
-                                }
 
-                                nyaBsOptionNode = findFocus(true);
+                                    if (searchKeyword.length === 0)
+                                    {
+                                        noSearchResult.hide();
+                                        //options.removeClass("active");
+                                    }
 
-                                if (nyaBsOptionNode) {
-                                    options.removeClass('active');
-                                    jqLite(nyaBsOptionNode).addClass('active');
-                                }
+                                    nyaBsOptionNode = findFocus(true);
 
-                            });
+                                    if (nyaBsOptionNode) {
+                                        options.removeClass('active');
+                                        //jqLite(nyaBsOptionNode).addClass('active');
+                                    }
+
+                                }); // end of on
+                            }); //end of for each
                         }
 
 
@@ -849,7 +886,7 @@
                         ngCtrl.$render = function () {
                             var modelValue = ngCtrl.$modelValue,
                                     index,
-                                    bsOptionElements = dropdownMenu.children(),
+                                    bsOptionElements = newDropDownContainer.children(),
                                     length = bsOptionElements.length,
                                     value;
                             if (typeof modelValue === 'undefined') {
@@ -857,6 +894,7 @@
                                 for (index = 0; index < length; index++) {
                                     if (bsOptionElements.eq(index).hasClass('nya-bs-option')) {
                                         bsOptionElements.eq(index).removeClass('selected');
+                                        bsOptionElements.eq(index).find('.check-mark').hide();
                                     }
                                 }
                             } else {
@@ -867,14 +905,18 @@
                                         if (isMultiple) {
                                             if (contains(modelValue, value)) {
                                                 bsOptionElements.eq(index).addClass('selected');
+                                                bsOptionElements.eq(index).find('.check-mark').show();
                                             } else {
                                                 bsOptionElements.eq(index).removeClass('selected');
+                                                bsOptionElements.eq(index).find('.check-mark').hide();
                                             }
                                         } else {
                                             if (deepEquals(modelValue, value)) {
                                                 bsOptionElements.eq(index).addClass('selected');
+                                                bsOptionElements.eq(index).find('.check-mark').show();
                                             } else {
                                                 bsOptionElements.eq(index).removeClass('selected');
+                                                bsOptionElements.eq(index).find('.check-mark').hide();
                                             }
                                         }
 
@@ -956,7 +998,7 @@
 
                                 if (keyCode === 27) {
                                     // escape pressed
-                                    dropdownToggle[0].focus();
+                                    newDropDownToggleDisplay[0].focus();
                                     if ($element.hasClass('open')) {
                                         $element.triggerHandler('blur');
                                     }
@@ -1130,7 +1172,7 @@
                         }
 
                         /**
-                         * @param selectAll 
+                         * @param selectAll
                          */
                         function setAllOptions(selectAll) {
                             if (!isMultiple || isDisabled)
@@ -1140,7 +1182,7 @@
                                     wv,
                                     viewValue;
 
-                            liElements = dropdownMenu[0].querySelectorAll('.nya-bs-option');
+                            liElements = newDropDownContainer.find('.nya-bs-option');
                             if (liElements.length > 0) {
                                 wv = ngCtrl.$viewValue;
 
@@ -1165,10 +1207,16 @@
                                             // check element
                                             viewValue.push(value);
                                             nyaBsOption.addClass('selected');
+                                            nyaBsOption.find('.check-mark').each(function () {
+                                                $(this).show();
+                                            });
                                         } else if (!selectAll && index !== -1) {
                                             // uncheck element
                                             viewValue.splice(index, 1);
                                             nyaBsOption.removeClass('selected');
+                                            nyaBsOption.find('.check-mark').each(function () {
+                                                $(this).hide();
+                                            });
                                         }
                                     }
                                 }
@@ -1206,19 +1254,24 @@
                                         // check element
                                         viewValue.push(value);
                                         nyaBsOption.addClass('selected');
+                                        nyaBsOption.find('.check-mark').show();
 
                                     } else {
                                         // uncheck element
                                         viewValue.splice(index, 1);
                                         nyaBsOption.removeClass('selected');
+                                        nyaBsOption.find('.check-mark').hide();
 
                                     }
 
                                 } else {
-                                    dropdownMenu.children().removeClass('selected');
+                                    newDropDownContainer.find('.check-mark').each(function () {
+                                        $(this).hide();
+                                    });
+                                    newDropDownContainer.children().removeClass('selected');
                                     viewValue = value;
                                     nyaBsOption.addClass('selected');
-
+                                    nyaBsOption.find('.check-mark').show();
                                 }
                             }
                             // update view value regardless
@@ -1275,24 +1328,25 @@
                             var viewValue = ngCtrl.$viewValue;
                             $element.triggerHandler('change');
 
-                            var filterOption = jqLite(dropdownToggle[0].querySelector('.filter-option'));
-                            var specialTitle = jqLite(dropdownToggle[0].querySelector('.special-title'));
+                            var filterOption = newDropDownToggleDisplay.find('.filter-option');
+                            var specialTitle = newDropDownToggleDisplay.find('.special-title');
+
                             if (typeof viewValue === 'undefined') {
                                 /**
                                  * Select empty option when model is undefined.
                                  */
-                                dropdownToggle.addClass('show-special-title');
+                                newDropDownToggleDisplay.addClass('show-special-title');
                                 filterOption.empty();
                                 return;
                             }
                             if (isMultiple && viewValue.length === 0) {
-                                dropdownToggle.addClass('show-special-title');
+                                newDropDownToggleDisplay.addClass('show-special-title');
                                 filterOption.empty();
                             } else {
-                                dropdownToggle.removeClass('show-special-title');
+                                newDropDownToggleDisplay.removeClass('show-special-title');
                                 $timeout(function () {
 
-                                    var bsOptionElements = dropdownMenu.children(),
+                                    var bsOptionElements = newDropDownContainer.children(),
                                             value,
                                             nyaBsOption,
                                             index,
@@ -1395,7 +1449,11 @@
 
                             if (/\d+/.test($attrs.size)) {
                                 var dropdownSize = parseInt($attrs.size, 10);
-                                dropdownMenu.css('max-height', (dropdownSize * liHeight) + 'px');
+                                var actualSize = (dropdownSize * liHeight);
+                                if (actualSize !== 0)
+                                    dropdownMenu.css('max-height', (dropdownSize * liHeight) + 'px');
+                                else
+                                    dropdownMenu.css('max-height', (dropdownSize * 30) + 'px');
                                 dropdownMenu.css('overflow-y', 'auto');
                             }
 
@@ -1684,10 +1742,12 @@
                                         if (nyaBsSelectCtrl.isMultiple) {
                                             if (Array.isArray(ngCtrl.$modelValue) && contains(ngCtrl.$modelValue, value)) {
                                                 clone.addClass('selected');
+                                                clone.find('.check-mark').show();
                                             }
                                         } else {
                                             if (deepEquals(value, ngCtrl.$modelValue)) {
                                                 clone.addClass('selected');
+                                                clone.find('.check-mark').show();
                                             }
                                         }
 
