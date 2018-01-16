@@ -453,7 +453,7 @@
                 var newDropDownToggleCaret = $('<button type="button" class="btn btn-default dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
                     '<span class="sr-only">Toggle Dropdown</span>' +
                     '</button>');
-                var newDropDownContainer = $('<div class="dropdown-menu btn-block"></div>');
+                var newDropDownContainer = $('<div class="dropdown-menu btn-block d-block"></div>');
 
                 var buttonClass = 'btn-default';
 
@@ -510,7 +510,7 @@
                 classList = getClassList(originalSelector);
 
                 classList.forEach(function (className) {
-                    if (/btn-(?:primary|secondary|dark|light|info|success|warning|danger|inverse|outline-secondary|outline-dark|outline-light|outline-primary|outline-info|outline-success|outline-warning|outline-danger|outline-inverse|outline-secondary|)/.test(className)) {
+                    if (/btn-(?:primary|secondary|dark|light|info|success|warning|danger|inverse|outline-secondary|outline-dark|outline-light|outline-primary|outline-info|outline-success|outline-warning|outline-danger|outline-inverse|)/.test(className)) {
                         tElement.removeClass(className);
                         newDropDownToggleDisplay.removeClass('btn-default');
                         newDropDownToggleDisplay.addClass(className);
@@ -536,6 +536,7 @@
                     if (liElement.hasClass('nya-bs-option') || liElement.attr('nya-bs-option')) {
                         liElement.addClass('dropdown-item');
                         liElement.find('a').attr('tabindex', '0');
+                        liElement.find('a').attr('style','color:inherit;');
                         // In order to be compatible with old version, we should copy value of value attribute into data-value attribute.
                         // For the reason we use data-value instead, see http://nya.io/AngularJS/Beware-Of-Using-value-Attribute-On-list-element/
                         nyaBsOptionValue = liElement.attr('value');
