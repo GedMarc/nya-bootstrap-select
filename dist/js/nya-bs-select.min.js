@@ -453,7 +453,7 @@
                 var newDropDownToggleCaret = $('<button type="button" class="btn btn-default dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
                     '<span class="sr-only">Toggle Dropdown</span>' +
                     '</button>');
-                var newDropDownContainer = $('<div class="dropdown-menu btn-block d-block"></div>');
+                var newDropDownContainer = $('<div class="dropdown-menu btn-block"></div>');
 
                 var buttonClass = 'btn-default';
 
