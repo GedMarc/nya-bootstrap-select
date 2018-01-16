@@ -1,3 +1,4 @@
+/**Global angular **/
 /**
  * nya-bootstrap-select v2.1.6
  * Copyright 2014 Nyasoft
@@ -342,7 +343,7 @@
             'en-us': {
                 defaultNoneSelection: 'Nothing selected',
                 noSearchResult: 'NO SEARCH RESULT',
-                numberItemSelected: '%d items selected',
+                numberItemSelected: '%d items selected', 
                 selectAll: 'Select All',
                 deselectAll: 'Deselect All'
             }
@@ -442,7 +443,7 @@
                     var originalElement = $(tElement);
                     var originalSelector = originalElement[0];
 
-                    var newElement = $('<div class="dropdown"></div>'); //create the new drop down element separate from the ol tag
+                    var newElement = $('<div class="dropdown show"></div>'); //create the new drop down element separate from the ol tag
                     var newDropDownToggleDisplay = $('<button class="btn dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
                             '<span class="pull-left filter-option"></span>' +
                             '<span class="pull-left special-title"></span>' +
@@ -509,7 +510,7 @@
                     classList = getClassList(originalSelector);
 
                     classList.forEach(function (className) {
-                        if (/btn-(?:primary|info|success|warning|danger|inverse|secondary|outline-primary|outline-info|outline-success|outline-warning|outline-danger|outline-inverse|outline-secondary|)/.test(className)) {
+                        if (/btn-(?:primary|secondary|dark|light|info|success|warning|danger|inverse|outline-secondary|outline-dark|outline-light|outline-primary|outline-info|outline-success|outline-warning|outline-danger|outline-inverse|outline-secondary|)/.test(className)) {
                             tElement.removeClass(className);
                             newDropDownToggleDisplay.removeClass('btn-default');
                             newDropDownToggleDisplay.addClass(className);
@@ -533,7 +534,7 @@
                     for (index = 0; index < length; index++) {
                         liElement = options.eq(index);
                         if (liElement.hasClass('nya-bs-option') || liElement.attr('nya-bs-option')) {
-                            liElement.addClass("dropdown-item");
+                            liElement.addClass('dropdown-item');
                             liElement.find('a').attr('tabindex', '0');
                             // In order to be compatible with old version, we should copy value of value attribute into data-value attribute.
                             // For the reason we use data-value instead, see http://nya.io/AngularJS/Beware-Of-Using-value-Attribute-On-list-element/
